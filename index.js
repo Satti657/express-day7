@@ -8,7 +8,6 @@ const app = express();
 app.use(express.json());
 
 
-// Database test
 app.get("/", async (req, res) => {
     try {
         const result = await pool.query("SELECT NOW()");
@@ -20,11 +19,24 @@ app.get("/", async (req, res) => {
 });
 
 
-// GET all tasks
 app.get("/tasks", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM tasks");
+        const result = await pool.query(
+            `
+            SELECT
+                tasks.id,
+                tasks.title,
+                tasks.completed,
+                users.name,
+                users.email
+            FROM tasks
+            JOIN users
+            ON tasks.user_id = users.id
+            `
+        );
+
         res.json(result.rows);
+
     } catch (error) {
         console.log(error);
         res.status(500).send("Error fetching tasks");
@@ -32,14 +44,13 @@ app.get("/tasks", async (req, res) => {
 });
 
 
-// POST create task
 app.post("/tasks", async (req, res) => {
     try {
-        const { title } = req.body;
+        const { title, user_id } = req.body;
 
         const result = await pool.query(
-            "INSERT INTO tasks (title) VALUES ($1) RETURNING *",
-            [title]
+            "INSERT INTO tasks (title, user_id) VALUES ($1, $2) RETURNING *",
+            [title, user_id]
         );
 
         res.json(result.rows[0]);
@@ -68,11 +79,6 @@ app.delete("/tasks/:id", async (req, res) => {
 });
 
 
-// Start server (always last)
-app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
-});
-
 app.put("/tasks/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,4 +95,56 @@ app.put("/tasks/:id", async (req, res) => {
         console.log(error);
         res.status(500).send("Error updating task");
     }
+});
+
+app.get("/users/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(
+            `
+            SELECT
+                users.id AS user_id,
+                users.name,
+                users.email,
+                tasks.id AS task_id,
+                tasks.title,
+                tasks.completed
+            FROM users
+            JOIN tasks
+            ON users.id = tasks.user_id
+            WHERE users.id=$1
+            `,
+            [id]
+        );
+
+        res.json(result.rows);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error fetching user details");
+    }
+});
+
+app.post("/users", async (req, res) => {
+    try {
+        const { name, email } = req.body;
+
+        const result = await pool.query(
+            "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
+            [name, email]
+        );
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error adding user");
+    }
+});
+
+
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
 });
