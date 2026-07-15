@@ -261,15 +261,7 @@ All endpoints were successfully tested, including:
 
 ---
 
-## Author
 
-**Arslan Satti**
 
-BS Computer Science Student
 
-Backend Development Learning Journey
-
-Day 7 Project – Express REST API
-
----
 
