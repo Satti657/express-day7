@@ -11,7 +11,7 @@ async function getTasks(req, res) {
                 users.email
             FROM tasks
             JOIN users
-            ON tasks.user_id = users.id
+                ON tasks.user_id = users.id
         `);
 
         res.status(200).json({
@@ -31,7 +31,6 @@ async function getTasks(req, res) {
 
 async function createTask(req, res) {
     try {
-
         const { title, user_id } = req.body;
 
         if (!title || typeof title !== "string" || title.trim() === "") {
@@ -49,7 +48,11 @@ async function createTask(req, res) {
         }
 
         const result = await pool.query(
-            "INSERT INTO tasks (title, user_id) VALUES ($1, $2) RETURNING *",
+            `
+            INSERT INTO tasks (title, user_id)
+            VALUES ($1, $2)
+            RETURNING *
+            `,
             [title.trim(), user_id]
         );
 
@@ -70,7 +73,6 @@ async function createTask(req, res) {
 
 async function updateTask(req, res) {
     try {
-
         const id = Number(req.params.id);
         const { title, completed } = req.body;
 
@@ -96,7 +98,13 @@ async function updateTask(req, res) {
         }
 
         const result = await pool.query(
-            "UPDATE tasks SET title = $1, completed = $2 WHERE id = $3 RETURNING *",
+            `
+            UPDATE tasks
+            SET title = $1,
+                completed = $2
+            WHERE id = $3
+            RETURNING *
+            `,
             [title.trim(), completed, id]
         );
 
@@ -113,7 +121,6 @@ async function updateTask(req, res) {
         });
 
     } catch (error) {
-
         console.error(error);
 
         res.status(500).json({
@@ -125,7 +132,6 @@ async function updateTask(req, res) {
 
 async function deleteTask(req, res) {
     try {
-
         const id = Number(req.params.id);
 
         if (!Number.isInteger(id)) {
@@ -136,7 +142,11 @@ async function deleteTask(req, res) {
         }
 
         const result = await pool.query(
-            "DELETE FROM tasks WHERE id = $1 RETURNING *",
+            `
+            DELETE FROM tasks
+            WHERE id = $1
+            RETURNING *
+            `,
             [id]
         );
 
@@ -154,14 +164,12 @@ async function deleteTask(req, res) {
         });
 
     } catch (error) {
-
         console.error(error);
 
         res.status(500).json({
             success: false,
             message: "Error deleting task."
         });
-
     }
 }
 
