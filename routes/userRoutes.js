@@ -4,7 +4,8 @@ const router = express.Router();
 
 const {
     getUser,
-    createUser
+    createUser,
+    loginUser
 } = require("../controllers/userController");
 
 const validateUser = require("../middleware/validateUser");
@@ -12,5 +13,8 @@ const validateUser = require("../middleware/validateUser");
 router.get("/:id", getUser);
 
 router.post("/", validateUser, createUser);
+
+router.post("/login", loginUser);
+
 
 module.exports = router;

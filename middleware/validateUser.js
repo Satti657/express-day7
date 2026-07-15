@@ -1,14 +1,19 @@
-function validateUser(req, res, next) {
-    const { name, email } = req.body;
+const validateUser = (req, res, next) => {
+    const { name, email, password } = req.body;
 
-    if (!name || !email) {
+    if (!name || !email || !password) {
         return res.status(400).json({
-            success: false,
-            message: "Name and email are required."
+            error: "Name, email and password are required"
+        });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({
+            error: "Password must be at least 6 characters"
         });
     }
 
     next();
-}
+};
 
 module.exports = validateUser;
